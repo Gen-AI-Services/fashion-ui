@@ -1,6 +1,14 @@
 import streamlit as st
 import requests
+from dotenv import load_dotenv, find_dotenv
 
+load_dotenv(find_dotenv())
+import os
+
+username= os.getenv("API_USERNAME")
+password=os.getenv("API_PASSWORD")
+endpoint =os.getenv("API_ENDPOINT")
+st.session_state.authenticated = True
 st.set_page_config(page_title="Fashion", layout="wide")
 hide_st_style = """
     <style>
@@ -76,17 +84,18 @@ if authenticate_user():
             with st.chat_message("user"):
                 st.write(user_question)
             spinner = st.spinner("Thinking...") 
-            url = "https://fashion-backend-18a4640a2fd7.herokuapp.com/api/v1/uid/gpt4v" 
-            files = {'image': uploaded_file.getvalue()}
+            url = endpoint + "/api/v1/uid/gpt4v"
+            files = {'input_image': uploaded_file.getvalue()}
             try:
                 with spinner:
                     response = requests.post(url, files=files, params={"question": user_question})
-                    response = (response.json()['gpt']["choices"][0]["message"]["content"])
+                    print(response.json())
+                    response = (response.json()["message"]["content"])
                     st.session_state.messages.append({"role": "assistant", "content": response})
                 with st.chat_message("assistant"):
                     st.write(response)
             
             except Exception as e:
-                st.error("An error occurred. Please try again later.")
+                st.error("An error occurred. Please try again later. {e}")
 
 
